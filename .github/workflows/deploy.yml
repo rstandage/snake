@@ -1,0 +1,40 @@
+# Publishes this folder to GitHub Pages every time you push to main.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # adds a manual "Run workflow" button in the Actions tab
+
+# Only the permissions this job needs: publish to Pages and prove its identity.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# If two pushes happen close together, finish one deploy before starting the next.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Pages
+        uses: actions/configure-pages@v5
+
+      - name: Package the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
